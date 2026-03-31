@@ -1,0 +1,857 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>SideQuest</title>
+<link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700;800&family=Inter:wght@300;400;500&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg:#1E2336; --bg2:#252B45; --bg3:#2D3554; --card:#252B45;
+  --border:rgba(59,188,255,0.12); --border2:rgba(59,188,255,0.25);
+  --text:#F0EFFF; --text2:rgba(240,239,255,0.55); --text3:rgba(240,239,255,0.28);
+  --blue:#3BBCFF; --indigo:#5499FF; --lavender:#9B8FFF;
+  --blue-bg:rgba(59,188,255,0.12); --blue-glow:rgba(59,188,255,0.25);
+  --chill-c:#3BBCFF; --chill-bg:rgba(59,188,255,0.15);
+  --cozy-c:#FF9D6B;  --cozy-bg:rgba(255,157,107,0.15);
+  --intense-c:#FF6B8A; --intense-bg:rgba(255,107,138,0.15);
+  --social-c:#5DDE8A;  --social-bg:rgba(93,222,138,0.15);
+  --radius:16px; --radius-sm:10px; --trans:0.25s cubic-bezier(0.4,0,0.2,1);
+}
+body.theme-xbox {
+  --bg:#0A1F0A; --bg2:#0F2B0F; --bg3:#163016; --card:#0F2B0F;
+  --border:rgba(82,176,67,0.2); --border2:rgba(82,176,67,0.38);
+  --blue:#52B043; --indigo:#9BC848; --lavender:#8BCB40;
+  --blue-bg:rgba(82,176,67,0.12); --blue-glow:rgba(16,124,16,0.35);
+}
+body.theme-psn {
+  --bg:#00061A; --bg2:#000D2E; --bg3:#001040; --card:#000D2E;
+  --border:rgba(0,180,255,0.18); --border2:rgba(0,180,255,0.35);
+  --blue:#00B4FF; --indigo:#4D9FFF; --lavender:#7B8FFF;
+  --blue-bg:rgba(0,180,255,0.12); --blue-glow:rgba(0,68,156,0.45);
+}
+body.theme-steam {
+  --bg:#0E1620; --bg2:#171A21; --bg3:#1D2B3A; --card:#171A21;
+  --border:rgba(102,192,244,0.18); --border2:rgba(102,192,244,0.32);
+  --blue:#66C0F4; --indigo:#89C4E1; --lavender:#A8C8E0;
+  --blue-bg:rgba(102,192,244,0.1); --blue-glow:rgba(102,192,244,0.28);
+}
+body.theme-nintendo {
+  --bg:#1A0608; --bg2:#2A0C10; --bg3:#3A1018; --card:#2A0C10;
+  --border:rgba(230,0,18,0.22); --border2:rgba(230,0,18,0.42);
+  --blue:#E60012; --indigo:#FF3347; --lavender:#FF8090;
+  --blue-bg:rgba(230,0,18,0.13); --blue-glow:rgba(230,0,18,0.38);
+}
+*{box-sizing:border-box;margin:0;padding:0;-webkit-tap-highlight-color:transparent}
+body{background:#141824;display:flex;justify-content:center;align-items:center;min-height:100vh;font-family:'Inter',sans-serif;transition:background 0.6s}
+.phone-frame{width:390px;height:844px;background:var(--bg);border-radius:44px;overflow:hidden;position:relative;box-shadow:0 0 0 1px rgba(59,188,255,0.1),0 40px 120px rgba(0,0,0,0.85),inset 0 1px 0 rgba(255,255,255,0.07);transition:background 0.6s,box-shadow 0.6s}
+body.theme-xbox .phone-frame{box-shadow:0 0 0 1px rgba(82,176,67,0.2),0 40px 100px rgba(0,0,0,0.9),0 0 60px rgba(16,124,16,0.18)}
+body.theme-psn .phone-frame{box-shadow:0 0 0 1px rgba(0,180,255,0.18),0 40px 100px rgba(0,0,0,0.95),0 0 60px rgba(0,68,156,0.22)}
+body.theme-steam .phone-frame{box-shadow:0 0 0 1px rgba(102,192,244,0.15),0 40px 100px rgba(0,0,0,0.92),0 0 60px rgba(102,192,244,0.1)}
+body.theme-nintendo .phone-frame{box-shadow:0 0 0 1px rgba(230,0,18,0.25),0 40px 100px rgba(0,0,0,0.95),0 0 70px rgba(230,0,18,0.22)}
+
+.status-bar{height:48px;display:flex;align-items:center;justify-content:space-between;padding:14px 24px 0;position:absolute;top:0;left:0;right:0;z-index:200}
+.status-time{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:var(--text)}
+.status-icons{font-size:12px;color:var(--text2)}
+
+.screen{position:absolute;top:0;left:0;right:0;bottom:0;display:none;flex-direction:column;overflow:hidden;background:var(--bg);transition:background 0.6s}
+.screen.active{display:flex}
+.screen-body{flex:1;overflow-y:auto;overflow-x:hidden;scrollbar-width:none;padding-bottom:96px}
+.screen-body::-webkit-scrollbar{display:none}
+
+/* SPLASH */
+#screen-splash{background:linear-gradient(155deg,#1a1e35 0%,#1c2244 50%,#1a1e35 100%);justify-content:center;align-items:center}
+.splash-glow{position:absolute;width:340px;height:340px;border-radius:50%;background:radial-gradient(circle,rgba(59,188,255,0.18) 0%,transparent 70%);top:50%;left:50%;transform:translate(-50%,-58%);animation:pglow 3s ease-in-out infinite}
+@keyframes pglow{0%,100%{opacity:.7;transform:translate(-50%,-58%) scale(1)}50%{opacity:1;transform:translate(-50%,-58%) scale(1.1)}}
+.splash-content{text-align:center;z-index:1;padding:0 32px;display:flex;flex-direction:column;align-items:center}
+.logo-svg-large{width:96px;height:96px;margin-bottom:16px;filter:drop-shadow(0 0 24px rgba(59,188,255,0.45))}
+.splash-wordmark{font-family:'Poppins',sans-serif;font-size:38px;font-weight:800;color:var(--text);letter-spacing:-0.5px}
+.splash-wordmark span{color:var(--blue)}
+.splash-sub{font-size:14px;color:var(--text2);margin-top:8px;line-height:1.6}
+.btn-primary{background:linear-gradient(135deg,#1B6FD8,#3BBCFF);color:white;border:none;border-radius:100px;padding:15px 32px;font-family:'Poppins',sans-serif;font-size:15px;font-weight:600;cursor:pointer;transition:transform var(--trans),box-shadow var(--trans);box-shadow:0 0 28px rgba(59,188,255,0.32);width:100%}
+.btn-primary:hover{transform:scale(1.02)}
+.btn-primary:active{transform:scale(0.98)}
+.splash-cta{margin-top:40px}
+.splash-signin{margin-top:14px;color:var(--text2);font-size:13px;cursor:pointer}
+.splash-signin span{color:var(--blue)}
+
+/* ONBOARD */
+#screen-onboard{justify-content:center;align-items:center}
+.onboard-inner{padding:32px 28px;width:100%}
+.onboard-icon{font-size:50px;display:block;text-align:center;margin-bottom:14px}
+.onboard-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:700;color:var(--text);text-align:center;margin-bottom:8px}
+.onboard-desc{font-size:13px;color:var(--text2);line-height:1.6;text-align:center;margin-bottom:10px}
+.theme-note{font-size:12px;color:var(--blue);text-align:center;margin-bottom:20px;background:var(--blue-bg);padding:8px 14px;border-radius:var(--radius-sm);border:1px solid var(--border2)}
+.platform-opts{display:flex;flex-direction:column;gap:10px;margin-bottom:18px}
+.platform-opt{display:flex;align-items:center;gap:13px;padding:14px 16px;border:1.5px solid var(--border);border-radius:var(--radius-sm);cursor:pointer;transition:all var(--trans);background:var(--bg2)}
+.platform-opt:active{transform:scale(0.98)}
+.platform-opt.conn-xbox{border-color:#52B043;background:rgba(16,124,16,0.1);box-shadow:0 0 14px rgba(16,124,16,0.2)}
+.platform-opt.conn-psn{border-color:#00B4FF;background:rgba(0,68,156,0.1);box-shadow:0 0 14px rgba(0,100,220,0.18)}
+.platform-opt.conn-steam{border-color:#66C0F4;background:rgba(27,40,56,0.5);box-shadow:0 0 14px rgba(102,192,244,0.12)}
+.platform-opt.conn-nintendo{border-color:#E60012;background:rgba(230,0,18,0.1);box-shadow:0 0 14px rgba(230,0,18,0.2)}
+.p-icon{font-size:24px}
+.p-name{font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;color:var(--text);flex:1}
+.p-status{font-size:12px;font-weight:500}
+.p-status.ok-xbox{color:#52B043}.p-status.ok-psn{color:#00B4FF}.p-status.ok-steam{color:#66C0F4}
+.p-status.ok-nintendo{color:#E60012}
+.p-status.no{color:var(--text3)}
+.skip-link{color:var(--text3);font-size:13px;cursor:pointer;display:block;text-align:center;margin-top:10px}
+
+/* MOOD */
+.mood-header{padding:60px 24px 18px}
+.mood-greeting{font-family:'Poppins',sans-serif;font-size:25px;font-weight:700;color:var(--text);line-height:1.25}
+.mood-sub{font-size:13px;color:var(--text2);margin-top:6px}
+.mood-cards{padding:4px 24px;display:flex;flex-direction:column;gap:10px}
+.mood-card{border-radius:var(--radius);padding:16px 18px;cursor:pointer;border:1.5px solid transparent;transition:all var(--trans)}
+.mood-card:active{transform:scale(0.98)}
+.mood-card.chill{background:var(--chill-bg);border-color:rgba(59,188,255,0.18)}
+.mood-card.cozy{background:var(--cozy-bg);border-color:rgba(255,157,107,0.18)}
+.mood-card.intense{background:var(--intense-bg);border-color:rgba(255,107,138,0.18)}
+.mood-card.social{background:var(--social-bg);border-color:rgba(93,222,138,0.18)}
+.mood-card.selected.chill{border-color:var(--chill-c);box-shadow:0 0 18px rgba(59,188,255,0.22)}
+.mood-card.selected.cozy{border-color:var(--cozy-c);box-shadow:0 0 18px rgba(255,157,107,0.22)}
+.mood-card.selected.intense{border-color:var(--intense-c);box-shadow:0 0 18px rgba(255,107,138,0.22)}
+.mood-card.selected.social{border-color:var(--social-c);box-shadow:0 0 18px rgba(93,222,138,0.22)}
+.mood-row{display:flex;align-items:center;gap:12px}
+.mood-emoji{font-size:26px}
+.mood-text{flex:1}
+.mood-name{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700}
+.chill .mood-name{color:var(--chill-c)}.cozy .mood-name{color:var(--cozy-c)}.intense .mood-name{color:var(--intense-c)}.social .mood-name{color:var(--social-c)}
+.mood-desc{font-size:11px;color:var(--text2);margin-top:2px}
+.mood-check{width:20px;height:20px;border-radius:50%;border:1.5px solid var(--border2);display:flex;align-items:center;justify-content:center;font-size:10px;flex-shrink:0;transition:all var(--trans)}
+.mood-card.selected .mood-check{background:var(--blue);border-color:var(--blue);color:white}
+.mood-tags{display:flex;gap:5px;flex-wrap:wrap;margin-top:9px}
+.mood-tag{font-size:10px;padding:3px 9px;border-radius:100px;font-weight:500}
+.chill .mood-tag{background:rgba(59,188,255,0.15);color:var(--chill-c)}.cozy .mood-tag{background:rgba(255,157,107,0.15);color:var(--cozy-c)}.intense .mood-tag{background:rgba(255,107,138,0.15);color:var(--intense-c)}.social .mood-tag{background:rgba(93,222,138,0.15);color:var(--social-c)}
+.time-section{padding:16px 24px 0}
+.sec-label{font-family:'Poppins',sans-serif;font-size:10px;font-weight:600;color:var(--text2);text-transform:uppercase;letter-spacing:.08em;margin-bottom:9px}
+.time-chips{display:flex;gap:7px;flex-wrap:wrap}
+.time-chip{padding:7px 14px;border-radius:100px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-size:12px;cursor:pointer;transition:all var(--trans)}
+.time-chip.selected{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.time-chip:active{transform:scale(0.95)}
+.continue-btn{margin:20px 24px 0;width:calc(100% - 48px);padding:14px;border-radius:100px;border:none;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;transition:all var(--trans);opacity:.35;pointer-events:none;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);color:white}
+.continue-btn.ready{opacity:1;pointer-events:all;box-shadow:0 0 22px rgba(59,188,255,0.28)}
+.continue-btn:active{transform:scale(0.98)}
+
+/* HOME */
+.mood-accent{position:absolute;top:0;left:0;right:0;height:300px;pointer-events:none;transition:background .8s;z-index:0}
+.home-header{padding:52px 24px 12px;position:relative;z-index:1}
+.home-top{display:flex;justify-content:space-between;align-items:flex-start}
+.logo-row{display:flex;align-items:center;gap:7px}
+.logo-svg-sm{width:26px;height:26px}
+.logo-text{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+.home-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:var(--text);margin-top:10px}
+.avatar{width:36px;height:36px;border-radius:50%;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:12px;font-weight:700;color:white;box-shadow:0 0 10px rgba(59,188,255,0.3);cursor:pointer}
+.mood-pill{display:inline-flex;align-items:center;gap:5px;padding:5px 12px;border-radius:100px;font-size:12px;font-weight:500;margin-top:8px;cursor:pointer;transition:transform var(--trans)}
+.mood-pill:active{transform:scale(0.95)}
+.mood-pill.chill{background:var(--chill-bg);color:var(--chill-c);border:1px solid rgba(59,188,255,0.22)}
+.mood-pill.cozy{background:var(--cozy-bg);color:var(--cozy-c);border:1px solid rgba(255,157,107,0.22)}
+.mood-pill.intense{background:var(--intense-bg);color:var(--intense-c);border:1px solid rgba(255,107,138,0.22)}
+.mood-pill.social{background:var(--social-bg);color:var(--social-c);border:1px solid rgba(93,222,138,0.22)}
+.section-header{display:flex;justify-content:space-between;align-items:center;padding:16px 24px 9px;position:relative;z-index:1}
+.section-title{font-family:'Poppins',sans-serif;font-size:15px;font-weight:700;color:var(--text)}
+.section-link{font-size:12px;color:var(--blue);cursor:pointer}
+.featured-game{margin:0 24px;border-radius:var(--radius);overflow:hidden;position:relative;height:185px;cursor:pointer;transition:transform var(--trans);border:1px solid var(--border)}
+.featured-game:active{transform:scale(0.99)}
+.featured-bg{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;font-size:78px}
+.featured-overlay{position:absolute;inset:0;background:linear-gradient(to top,rgba(0,0,0,0.88) 0%,rgba(0,0,0,0.15) 60%,transparent 100%)}
+.featured-content{position:absolute;bottom:0;left:0;right:0;padding:13px 15px}
+.featured-badge{display:inline-block;font-size:10px;font-weight:600;padding:3px 8px;border-radius:4px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:5px}
+.featured-title{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:white}
+.featured-meta{font-size:11px;color:rgba(255,255,255,0.55);margin-top:3px;display:flex;gap:10px}
+.games-scroll{padding:0 24px;display:flex;gap:10px;overflow-x:auto;scrollbar-width:none;position:relative;z-index:1}
+.games-scroll::-webkit-scrollbar{display:none}
+.game-card{flex-shrink:0;width:128px;background:var(--card);border-radius:var(--radius-sm);overflow:hidden;cursor:pointer;border:1px solid var(--border);transition:all var(--trans)}
+.game-card:active{transform:scale(0.97)}
+.game-thumb{height:78px;display:flex;align-items:center;justify-content:center;font-size:36px;background:var(--bg3)}
+.game-info{padding:8px 10px}
+.game-name{font-family:'Poppins',sans-serif;font-size:11px;font-weight:600;color:var(--text);line-height:1.3}
+.game-time{font-size:10px;color:var(--text2);margin-top:3px}
+.game-tag{display:inline-block;font-size:10px;padding:2px 7px;border-radius:100px;margin-top:5px}
+.quickpick-btn{margin:0 24px;padding:15px 16px;background:var(--bg2);border:1.5px dashed var(--border2);border-radius:var(--radius);display:flex;align-items:center;gap:12px;cursor:pointer;transition:all var(--trans);position:relative;z-index:1}
+.quickpick-btn:hover{border-color:var(--blue);background:var(--blue-bg)}
+.quickpick-btn:active{transform:scale(0.99)}
+.qp-icon{width:40px;height:40px;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);border-radius:11px;display:flex;align-items:center;justify-content:center;font-size:18px;flex-shrink:0;box-shadow:0 0 12px rgba(59,188,255,0.32)}
+.qp-text{flex:1}
+.qp-title-t{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--text)}
+.qp-sub-t{font-size:11px;color:var(--text2);margin-top:2px}
+
+/* PLATFORM BANNER */
+.platform-banner{margin:0 24px 14px;padding:9px 13px;border-radius:var(--radius-sm);display:flex;align-items:center;gap:9px;font-size:12px;font-weight:500;position:relative;z-index:1}
+.platform-banner.xbox{background:rgba(16,124,16,0.14);border:1px solid rgba(82,176,67,0.28);color:#52B043}
+.platform-banner.psn{background:rgba(0,68,156,0.14);border:1px solid rgba(0,180,255,0.28);color:#00B4FF}
+.platform-banner.steam{background:rgba(27,40,56,0.5);border:1px solid rgba(102,192,244,0.28);color:#66C0F4}
+.platform-banner.nintendo{background:rgba(230,0,18,0.12);border:1px solid rgba(230,0,18,0.3);color:#E60012}
+
+/* DETAIL */
+.detail-hero{height:245px;position:relative;display:flex;align-items:center;justify-content:center;overflow:hidden}
+.detail-overlay{position:absolute;inset:0;background:linear-gradient(to bottom,transparent 30%,var(--bg) 100%)}
+.back-btn{position:absolute;top:52px;left:18px;width:33px;height:33px;background:rgba(0,0,0,0.42);backdrop-filter:blur(10px);border-radius:50%;display:flex;align-items:center;justify-content:center;cursor:pointer;border:1px solid rgba(255,255,255,0.1);color:white;font-size:16px;z-index:10;transition:transform var(--trans)}
+.back-btn:active{transform:scale(0.9)}
+.detail-content{padding:0 22px 24px}
+.detail-title{font-family:'Poppins',sans-serif;font-size:24px;font-weight:800;color:var(--text)}
+.detail-tags{display:flex;gap:7px;flex-wrap:wrap;margin-top:8px}
+.detail-tag{font-size:11px;padding:3px 11px;border-radius:100px;background:var(--bg2);color:var(--text2);border:1px solid var(--border)}
+.detail-stats{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;margin-top:14px}
+.detail-stat{background:var(--bg2);border-radius:var(--radius-sm);padding:11px 8px;text-align:center;border:1px solid var(--border)}
+.dstat-val{font-family:'Poppins',sans-serif;font-size:16px;font-weight:700;color:var(--text)}
+.dstat-lbl{font-size:10px;color:var(--text2);margin-top:2px}
+.detail-desc{font-size:13px;color:var(--text2);line-height:1.65;margin-top:14px}
+.play-btn{margin-top:18px;width:100%;padding:14px;border-radius:100px;border:none;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);color:white;font-family:'Poppins',sans-serif;font-size:14px;font-weight:600;cursor:pointer;box-shadow:0 0 20px rgba(59,188,255,0.28);transition:transform var(--trans)}
+.play-btn:active{transform:scale(0.98)}
+.later-btn{margin-top:9px;width:100%;padding:14px;border-radius:100px;border:1.5px solid var(--border);background:transparent;color:var(--text2);font-family:'Poppins',sans-serif;font-size:14px;font-weight:500;cursor:pointer;transition:all var(--trans)}
+.later-btn:hover{border-color:var(--blue);color:var(--blue)}
+
+/* BACKLOG */
+.backlog-header{padding:52px 24px 12px}
+.btabs{display:flex;gap:4px;padding:0 24px 12px}
+.btab{padding:7px 14px;border-radius:100px;font-size:12px;font-weight:500;cursor:pointer;border:1.5px solid var(--border);background:transparent;color:var(--text2);transition:all var(--trans)}
+.btab.active{background:var(--blue-bg);border-color:var(--blue);color:var(--blue)}
+.btab:active{transform:scale(0.96)}
+.backlog-list{padding:0 24px;display:flex;flex-direction:column;gap:9px}
+.bl-item{background:var(--card);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;gap:11px;border:1px solid var(--border);cursor:pointer;transition:all var(--trans)}
+.bl-item:active{transform:scale(0.99)}
+.bl-thumb{font-size:32px;flex-shrink:0}
+.bl-info{flex:1;min-width:0}
+.bl-name{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.bl-meta{font-size:11px;color:var(--text2);margin-top:2px}
+.bl-badge{font-size:10px;padding:2px 8px;border-radius:100px;font-weight:500;flex-shrink:0}
+.bb-playing{background:rgba(59,188,255,0.14);color:var(--blue)}
+.bb-saved{background:rgba(155,143,255,0.14);color:var(--lavender)}
+.bb-done{background:rgba(93,222,138,0.14);color:#5DDE8A}
+
+/* TOGETHER */
+.together-header{padding:52px 24px 12px}
+.match-box{margin:0 24px;background:var(--bg2);border-radius:var(--radius);padding:16px;border:1px solid var(--border)}
+.match-box-title{font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:var(--text);margin-bottom:12px}
+.match-row{margin-bottom:12px}
+.match-row-label{font-size:10px;color:var(--text2);margin-bottom:7px;font-weight:500;text-transform:uppercase;letter-spacing:.06em}
+.match-chips{display:flex;gap:6px;flex-wrap:wrap}
+.match-chip{padding:5px 12px;border-radius:100px;border:1.5px solid var(--border);background:var(--bg3);color:var(--text2);font-size:11px;cursor:pointer;transition:all var(--trans)}
+.match-chip.sel{border-color:var(--blue);background:var(--blue-bg);color:var(--blue)}
+.match-chip:active{transform:scale(0.95)}
+.match-btn{width:100%;padding:12px;border-radius:100px;border:none;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;margin-top:4px;transition:transform var(--trans);box-shadow:0 0 14px rgba(59,188,255,0.22)}
+.match-btn:active{transform:scale(0.98)}
+.friends-list{padding:0 24px;display:flex;flex-direction:column;gap:9px}
+.friend-card{background:var(--card);border-radius:var(--radius-sm);padding:12px;display:flex;align-items:center;gap:11px;border:1px solid var(--border);cursor:pointer;transition:all var(--trans)}
+.friend-card:active{transform:scale(0.99)}
+.friend-av{width:38px;height:38px;border-radius:50%;display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:13px;font-weight:700;color:white;flex-shrink:0}
+.friend-info{flex:1}
+.friend-name{font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;color:var(--text)}
+.friend-status{font-size:11px;color:var(--text2);margin-top:2px}
+.friend-pct{font-family:'Poppins',sans-serif;font-size:14px;font-weight:700;color:var(--blue)}
+.online-dot{display:inline-block;width:6px;height:6px;border-radius:50%;background:#5DDE8A;margin-right:3px;vertical-align:middle}
+
+/* PROFILE */
+.profile-header{padding:50px 24px 18px;text-align:center}
+.profile-av{width:72px;height:72px;border-radius:50%;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);display:flex;align-items:center;justify-content:center;font-family:'Poppins',sans-serif;font-size:24px;font-weight:700;color:white;margin:0 auto 10px;box-shadow:0 0 26px rgba(59,188,255,0.3)}
+.profile-name{font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;color:var(--text)}
+.profile-sub{font-size:12px;color:var(--text2);margin-top:3px}
+.p-platforms{display:flex;gap:7px;justify-content:center;margin-top:10px;flex-wrap:wrap}
+.pbadge{padding:4px 11px;border-radius:100px;font-size:11px;font-weight:500;border:1px solid var(--border);background:var(--bg2);color:var(--text2)}
+.stats-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:8px;padding:0 24px;margin-bottom:18px}
+.stat-card{background:var(--bg2);border-radius:var(--radius-sm);padding:12px 8px;text-align:center;border:1px solid var(--border)}
+.stat-val{font-family:'Poppins',sans-serif;font-size:19px;font-weight:700;color:var(--text)}
+.stat-lbl{font-size:10px;color:var(--text2);margin-top:2px}
+.settings-list{padding:0 24px;display:flex;flex-direction:column;gap:1px}
+.settings-item{padding:12px 15px;background:var(--card);display:flex;align-items:center;gap:11px;cursor:pointer;border:1px solid transparent;border-bottom-color:var(--border);transition:background var(--trans)}
+.settings-item:first-child{border-radius:var(--radius-sm) var(--radius-sm) 0 0;border:1px solid var(--border)}
+.settings-item:last-child{border-radius:0 0 var(--radius-sm) var(--radius-sm);border:1px solid var(--border)}
+.settings-item:hover{background:var(--bg2)}
+.s-icon{font-size:16px;width:24px;text-align:center}
+.s-label{flex:1;font-size:13px;color:var(--text)}
+.s-arrow{color:var(--text3);font-size:14px}
+
+/* BOTTOM NAV */
+.bottom-nav{position:absolute;bottom:0;left:0;right:0;height:78px;background:rgba(30,35,54,0.95);backdrop-filter:blur(20px);border-top:1px solid var(--border);display:flex;align-items:flex-start;padding-top:9px;z-index:50;transition:background .6s,border-color .6s}
+body.theme-xbox .bottom-nav{background:rgba(10,31,10,0.95)}
+body.theme-psn .bottom-nav{background:rgba(0,6,26,0.96)}
+body.theme-steam .bottom-nav{background:rgba(14,22,32,0.95)}
+body.theme-nintendo .bottom-nav{background:rgba(26,6,8,0.96)}
+.nav-item{flex:1;display:flex;flex-direction:column;align-items:center;gap:3px;cursor:pointer;transition:all var(--trans);padding:5px 0}
+.nav-item:active{transform:scale(0.9)}
+.nav-icon{font-size:19px;transition:transform var(--trans)}
+.nav-label{font-size:9px;color:var(--text3);font-weight:500;transition:color var(--trans)}
+.nav-item.active .nav-label{color:var(--blue)}
+.nav-item.active .nav-icon{transform:scale(1.12)}
+.nav-dot{width:4px;height:4px;border-radius:50%;background:var(--blue);opacity:0;transition:opacity var(--trans)}
+.nav-item.active .nav-dot{opacity:1}
+
+/* QP OVERLAY */
+.qp-overlay{position:absolute;inset:0;background:rgba(10,12,22,0.97);z-index:150;display:flex;flex-direction:column;align-items:center;justify-content:center;padding:32px;opacity:0;pointer-events:none;transition:opacity .3s}
+.qp-overlay.show{opacity:1;pointer-events:all}
+.qp-glow{position:absolute;width:250px;height:250px;border-radius:50%;background:radial-gradient(circle,rgba(59,188,255,0.28) 0%,transparent 70%)}
+.qp-emoji{font-size:68px;z-index:1;margin-bottom:12px;animation:float 2s ease-in-out infinite}
+@keyframes float{0%,100%{transform:translateY(0)}50%{transform:translateY(-7px)}}
+.qp-game-title{font-family:'Poppins',sans-serif;font-size:22px;font-weight:800;color:var(--text);text-align:center;z-index:1}
+.qp-game-sub{font-size:12px;color:var(--text2);margin-top:5px;z-index:1}
+.qp-actions{display:flex;gap:9px;margin-top:26px;z-index:1;width:100%}
+.qp-play{flex:1;padding:12px;background:linear-gradient(135deg,#1B6FD8,#3BBCFF);border:none;border-radius:100px;color:white;font-family:'Poppins',sans-serif;font-size:13px;font-weight:600;cursor:pointer;transition:transform var(--trans)}
+.qp-play:active{transform:scale(0.97)}
+.qp-shuffle{padding:12px 16px;border:1.5px solid var(--border2);background:transparent;border-radius:100px;color:var(--text2);font-family:'Poppins',sans-serif;font-size:13px;cursor:pointer;transition:all var(--trans)}
+.qp-shuffle:hover{border-color:var(--blue);color:var(--blue)}
+.qp-close{position:absolute;top:52px;right:18px;width:32px;height:32px;background:var(--bg2);border-radius:50%;border:1px solid var(--border);color:var(--text2);font-size:16px;display:flex;align-items:center;justify-content:center;cursor:pointer}
+
+/* PLATFORM TRANSITION OVERLAY */
+.pt-overlay{position:absolute;inset:0;z-index:300;opacity:0;pointer-events:none;transition:opacity .45s;display:flex;align-items:center;justify-content:center;flex-direction:column;gap:10px}
+.pt-overlay.show{opacity:1}
+.xbox-ov{background:radial-gradient(ellipse at center,rgba(16,124,16,0.95) 0%,rgba(10,31,10,0.99) 100%)}
+.psn-ov{background:radial-gradient(ellipse at center,rgba(0,55,145,0.97) 0%,rgba(0,6,26,0.99) 100%)}
+.steam-ov{background:radial-gradient(ellipse at center,rgba(27,40,56,0.97) 0%,rgba(14,22,32,0.99) 100%)}
+.nintendo-ov{background:radial-gradient(ellipse at center,rgba(200,0,14,0.97) 0%,rgba(26,6,8,0.99) 100%)}
+.pt-icon{font-size:52px;animation:pop-in .4s ease}
+.pt-text{font-family:'Poppins',sans-serif;font-size:18px;font-weight:700;color:white;animation:pop-in .4s ease .1s both}
+.pt-sub{font-size:12px;color:rgba(255,255,255,0.55);animation:pop-in .4s ease .2s both}
+@keyframes pop-in{from{opacity:0;transform:scale(0.8)}to{opacity:1;transform:scale(1)}}
+
+/* TOAST */
+.toast{position:absolute;bottom:90px;left:50%;transform:translateX(-50%) translateY(14px);background:rgba(37,43,69,0.97);backdrop-filter:blur(20px);border:1px solid var(--border2);color:var(--text);font-size:12px;padding:9px 18px;border-radius:100px;white-space:nowrap;opacity:0;transition:all .3s;z-index:200;pointer-events:none}
+.toast.show{opacity:1;transform:translateX(-50%) translateY(0)}
+</style>
+</head>
+<body>
+<div class="phone-frame" id="app">
+
+<div class="status-bar">
+  <span class="status-time" id="clock">9:41</span>
+  <span class="status-icons">📶 🔋</span>
+</div>
+
+<!-- Platform transition overlay -->
+<div class="pt-overlay" id="ptOverlay">
+  <div class="pt-icon" id="ptIcon">🟢</div>
+  <div class="pt-text" id="ptText">Xbox Connected!</div>
+  <div class="pt-sub" id="ptSub">Switching to Xbox theme…</div>
+</div>
+
+<!-- ══ SPLASH ══ -->
+<div class="screen active" id="screen-splash">
+  <div class="splash-glow"></div>
+  <div class="splash-content">
+    <!-- Gamepad logo SVG matching uploaded design -->
+    <svg class="logo-svg-large" viewBox="0 0 160 130" fill="none" xmlns="http://www.w3.org/2000/svg">
+      <!-- Glow ring -->
+      <ellipse cx="80" cy="75" rx="52" ry="46" fill="none" stroke="#3BBCFF" stroke-width="2" opacity="0.4"/>
+      <!-- Controller body -->
+      <path d="M38 65 Q34 52 40 46 Q50 38 66 40 L80 42 L94 40 Q110 38 120 46 Q126 52 122 65 L118 84 Q114 96 106 98 Q96 100 88 90 L80 86 L72 90 Q64 100 54 98 Q46 96 42 84 Z" fill="#2A3A7A" stroke="#3BBCFF" stroke-width="1.5"/>
+      <!-- Left grip -->
+      <ellipse cx="48" cy="88" rx="12" ry="14" fill="#243270"/>
+      <!-- Right grip -->
+      <ellipse cx="112" cy="88" rx="12" ry="14" fill="#243270"/>
+      <!-- D-pad vertical -->
+      <rect x="54" y="58" width="6" height="18" rx="3" fill="#1a2560"/>
+      <!-- D-pad horizontal -->
+      <rect x="48" y="64" width="18" height="6" rx="3" fill="#1a2560"/>
+      <!-- Face buttons -->
+      <circle cx="103" cy="60" r="4.5" fill="#FF6B8A" opacity="0.95"/>
+      <circle cx="113" cy="68" r="4.5" fill="#FFD166" opacity="0.95"/>
+      <circle cx="103" cy="76" r="4.5" fill="#5DDE8A" opacity="0.95"/>
+      <circle cx="93"  cy="68" r="4.5" fill="#3BBCFF" opacity="0.95"/>
+      <!-- Center button -->
+      <circle cx="80" cy="62" r="6" fill="#3BBCFF" opacity="0.85" stroke="rgba(59,188,255,0.4)" stroke-width="2"/>
+      <!-- Menu dots -->
+      <circle cx="72" cy="56" r="2.5" fill="#5499FF" opacity="0.7"/>
+      <circle cx="88" cy="56" r="2.5" fill="#5499FF" opacity="0.7"/>
+      <!-- Sparkles -->
+      <path d="M26 30 L28 22 L30 30 L26 30Z" fill="#3BBCFF" opacity="0.85"/>
+      <path d="M126 18 L128 10 L130 18 L126 18Z" fill="#9B8FFF" opacity="0.75"/>
+      <circle cx="20" cy="50" r="2.5" fill="#9B8FFF" opacity="0.7"/>
+      <circle cx="138" cy="42" r="2"   fill="#FFD166" opacity="0.7"/>
+      <path d="M130 54 L132 47 L134 54" stroke="#3BBCFF" stroke-width="1.5" fill="none" opacity="0.55"/>
+    </svg>
+    <div class="splash-wordmark">Side<span>Quest</span></div>
+    <div class="splash-sub">Play what fits your mood,<br>time &amp; energy</div>
+    <button class="btn-primary splash-cta" onclick="goTo('screen-onboard')">Get Started</button>
+    <div class="splash-signin">Already have an account? <span onclick="goTo('screen-mood')">Sign in</span></div>
+  </div>
+</div>
+
+<!-- ══ ONBOARD ══ -->
+<div class="screen" id="screen-onboard">
+  <div class="screen-body" style="display:flex;flex-direction:column;justify-content:center;min-height:100%">
+    <div style="height:48px"></div>
+    <div class="onboard-inner">
+      <span class="onboard-icon">🔗</span>
+      <div class="onboard-title">Connect your library</div>
+      <div class="onboard-desc">Import your games automatically. Each platform unlocks its own color theme throughout the app.</div>
+      <div class="theme-note">✨ Platform theme — connect to transform the app's look</div>
+      <div class="platform-opts">
+        <div class="platform-opt" id="opt-steam" onclick="connectPlatform('steam')">
+          <span class="p-icon">🖥️</span><span class="p-name">Steam</span>
+          <span class="p-status no" id="steam-status">Connect →</span>
+        </div>
+        <div class="platform-opt" id="opt-psn" onclick="connectPlatform('psn')">
+          <span class="p-icon">🎮</span><span class="p-name">PlayStation</span>
+          <span class="p-status no" id="psn-status">Connect →</span>
+        </div>
+        <div class="platform-opt" id="opt-xbox" onclick="connectPlatform('xbox')">
+          <span class="p-icon">🟢</span><span class="p-name">Xbox</span>
+          <span class="p-status no" id="xbox-status">Connect →</span>
+        </div>
+        <div class="platform-opt" id="opt-nintendo" onclick="connectPlatform('nintendo')">
+          <span class="p-icon">🔴</span><span class="p-name">Nintendo Switch</span>
+          <span class="p-status no" id="nintendo-status">Connect →</span>
+        </div>
+      </div>
+      <button class="btn-primary" onclick="goTo('screen-mood')">Continue</button>
+      <div class="skip-link" onclick="goTo('screen-mood')">Skip for now</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══ MOOD ══ -->
+<div class="screen" id="screen-mood">
+  <div class="screen-body">
+    <div style="height:52px"></div>
+    <div class="mood-header">
+      <div class="mood-greeting">What's your vibe<br>right now?</div>
+      <div class="mood-sub">We'll find the perfect game for this moment</div>
+    </div>
+    <div class="mood-cards">
+      <div class="mood-card chill" onclick="selectMood('chill',this)">
+        <div class="mood-row"><div class="mood-emoji">🌊</div><div class="mood-text"><div class="mood-name">Chill</div><div class="mood-desc">Low effort, relaxing, go at your own pace</div></div><div class="mood-check">✓</div></div>
+        <div class="mood-tags"><span class="mood-tag">Open world</span><span class="mood-tag">Casual</span><span class="mood-tag">Puzzle</span></div>
+      </div>
+      <div class="mood-card cozy" onclick="selectMood('cozy',this)">
+        <div class="mood-row"><div class="mood-emoji">☕</div><div class="mood-text"><div class="mood-name">Cozy</div><div class="mood-desc">Warm stories, narrative depth, comfort play</div></div><div class="mood-check">✓</div></div>
+        <div class="mood-tags"><span class="mood-tag">RPG</span><span class="mood-tag">Sim</span><span class="mood-tag">Visual novel</span></div>
+      </div>
+      <div class="mood-card intense" onclick="selectMood('intense',this)">
+        <div class="mood-row"><div class="mood-emoji">⚡</div><div class="mood-text"><div class="mood-name">Intense</div><div class="mood-desc">Competitive, focused, adrenaline &amp; challenge</div></div><div class="mood-check">✓</div></div>
+        <div class="mood-tags"><span class="mood-tag">FPS</span><span class="mood-tag">Action</span><span class="mood-tag">Roguelike</span></div>
+      </div>
+      <div class="mood-card social" onclick="selectMood('social',this)">
+        <div class="mood-row"><div class="mood-emoji">👥</div><div class="mood-text"><div class="mood-name">Social</div><div class="mood-desc">Co-op, party games, play with friends</div></div><div class="mood-check">✓</div></div>
+        <div class="mood-tags"><span class="mood-tag">Co-op</span><span class="mood-tag">Party</span><span class="mood-tag">Multiplayer</span></div>
+      </div>
+    </div>
+    <div class="time-section">
+      <div class="sec-label">How long do you have?</div>
+      <div class="time-chips">
+        <div class="time-chip" onclick="selectTime(this)">0–20 min</div>
+        <div class="time-chip" onclick="selectTime(this)">30–45 min</div>
+        <div class="time-chip" onclick="selectTime(this)">1 hour</div>
+        <div class="time-chip" onclick="selectTime(this)">2+ hours</div>
+      </div>
+    </div>
+    <button class="continue-btn" id="moodContinue" onclick="finishMood()">Find my games →</button>
+    <div style="height:28px"></div>
+  </div>
+</div>
+
+<!-- ══ HOME ══ -->
+<div class="screen" id="screen-home">
+  <div class="mood-accent" id="moodAccent"></div>
+  <div class="screen-body" style="position:relative;z-index:1">
+    <div style="height:52px"></div>
+    <div class="home-header">
+      <div class="home-top">
+        <div>
+          <div class="logo-row">
+            <svg class="logo-svg-sm" viewBox="0 0 160 130" fill="none">
+              <path d="M38 65 Q34 52 40 46 Q50 38 66 40 L80 42 L94 40 Q110 38 120 46 Q126 52 122 65 L118 84 Q114 96 106 98 Q96 100 88 90 L80 86 L72 90 Q64 100 54 98 Q46 96 42 84 Z" fill="#2A3A7A" stroke="#3BBCFF" stroke-width="2"/>
+              <ellipse cx="48" cy="88" rx="12" ry="14" fill="#243270"/>
+              <ellipse cx="112" cy="88" rx="12" ry="14" fill="#243270"/>
+              <rect x="54" y="58" width="6" height="18" rx="3" fill="#1a2560"/>
+              <rect x="48" y="64" width="18" height="6" rx="3" fill="#1a2560"/>
+              <circle cx="103" cy="60" r="4" fill="#FF6B8A"/><circle cx="113" cy="68" r="4" fill="#FFD166"/>
+              <circle cx="103" cy="76" r="4" fill="#5DDE8A"/><circle cx="93" cy="68" r="4" fill="#3BBCFF"/>
+              <circle cx="80" cy="62" r="5" fill="#3BBCFF" opacity="0.85"/>
+            </svg>
+            <span class="logo-text">SideQuest</span>
+          </div>
+          <div class="home-title">What to play?</div>
+        </div>
+        <div class="avatar" onclick="switchTab('profile')">AJ</div>
+      </div>
+      <div class="mood-pill chill" id="activeMoodPill" onclick="goTo('screen-mood')">🌊 Chill · 30 min ✎</div>
+    </div>
+    <div id="platformBanner" style="display:none"></div>
+    <div class="section-header"><div class="section-title">Quick pick</div></div>
+    <div class="quickpick-btn" onclick="showQuickPick()">
+      <div class="qp-icon">⚡</div>
+      <div class="qp-text"><div class="qp-title-t">SideQuest Mode</div><div class="qp-sub-t">One tap. Perfect match. Just play.</div></div>
+      <span style="color:var(--text3);font-size:18px">›</span>
+    </div>
+    <div class="section-header"><div class="section-title">Top pick for you</div><div class="section-link" onclick="goTo('screen-mood')">Refresh</div></div>
+    <div class="featured-game" id="featuredGame" onclick="openDetail('featured')">
+      <div class="featured-bg" id="featuredBg">🌿</div>
+      <div class="featured-overlay"></div>
+      <div class="featured-content">
+        <div class="featured-badge" id="featuredBadge">98% match · Chill</div>
+        <div class="featured-title" id="featuredTitle">Stardew Valley</div>
+        <div class="featured-meta"><span>⏱ 30–45 min</span><span>🌿 Farming</span></div>
+      </div>
+    </div>
+    <div class="section-header"><div class="section-title">More picks</div><div class="section-link">See all</div></div>
+    <div class="games-scroll" id="gameScroll"></div>
+    <div class="section-header"><div class="section-title">Resume from backlog</div><div class="section-link" onclick="switchTab('backlog')">Backlog</div></div>
+    <div class="games-scroll" id="backlogScroll"></div>
+    <div style="height:16px"></div>
+  </div>
+  <!-- QP overlay -->
+  <div class="qp-overlay" id="qpOverlay">
+    <div class="qp-glow"></div>
+    <div class="qp-emoji" id="qpEmoji">🌊</div>
+    <div class="qp-game-title" id="qpTitle">Stardew Valley</div>
+    <div class="qp-game-sub" id="qpSub">Farming · 30–45 min · Perfect match</div>
+    <div class="qp-actions">
+      <button class="qp-play" onclick="closeQP()">▶ Play now</button>
+      <button class="qp-shuffle" onclick="shuffleQP()">↻ Shuffle</button>
+    </div>
+    <div class="qp-close" onclick="closeQP()">✕</div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item active" onclick="switchTab('home')"><div class="nav-icon">🔭</div><div class="nav-label">Discover</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('backlog')"><div class="nav-icon">📚</div><div class="nav-label">Backlog</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('together')"><div class="nav-icon">👾</div><div class="nav-label">Together</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('profile')"><div class="nav-icon">👤</div><div class="nav-label">Profile</div><div class="nav-dot"></div></div>
+  </div>
+</div>
+
+<!-- ══ DETAIL ══ -->
+<div class="screen" id="screen-detail">
+  <div class="detail-hero" id="detailHero">
+    <div id="detailEmoji" style="font-size:88px;z-index:1">🌿</div>
+    <div class="detail-overlay"></div>
+    <div class="back-btn" onclick="goBack()">‹</div>
+  </div>
+  <div class="screen-body" style="margin-top:-14px;position:relative;z-index:1">
+    <div class="detail-content">
+      <div id="detailMoodTag" class="detail-tag" style="display:inline-block;margin-bottom:8px">🌊 Chill match</div>
+      <div class="detail-title" id="detailTitle">Stardew Valley</div>
+      <div class="detail-tags" id="detailTags"></div>
+      <div class="detail-stats">
+        <div class="detail-stat"><div class="dstat-val" id="dSession">30 min</div><div class="dstat-lbl">Session</div></div>
+        <div class="detail-stat"><div class="dstat-val" id="dMatch">98%</div><div class="dstat-lbl">Match</div></div>
+        <div class="detail-stat"><div class="dstat-val" id="dHours">150h</div><div class="dstat-lbl">Total hrs</div></div>
+      </div>
+      <div class="detail-desc" id="detailDesc">A relaxing farming RPG.</div>
+      <button class="play-btn" onclick="showToast('Launching game... ▶')">▶  Start Playing</button>
+      <button class="later-btn" onclick="showToast('Added to backlog ♡')">♡  Maybe Later</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══ BACKLOG ══ -->
+<div class="screen" id="screen-backlog">
+  <div class="screen-body">
+    <div style="height:52px"></div>
+    <div class="backlog-header">
+      <div class="home-title">My Backlog</div>
+      <div style="color:var(--text2);font-size:12px;margin-top:3px">12 games · 3 in progress</div>
+    </div>
+    <div class="btabs">
+      <div class="btab active" onclick="switchBTab(this,'playing')">Playing</div>
+      <div class="btab" onclick="switchBTab(this,'saved')">Saved</div>
+      <div class="btab" onclick="switchBTab(this,'completed')">Completed</div>
+    </div>
+    <div class="backlog-list" id="backlogList"></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="switchTab('home')"><div class="nav-icon">🔭</div><div class="nav-label">Discover</div><div class="nav-dot"></div></div>
+    <div class="nav-item active" onclick="switchTab('backlog')"><div class="nav-icon">📚</div><div class="nav-label">Backlog</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('together')"><div class="nav-icon">👾</div><div class="nav-label">Together</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('profile')"><div class="nav-icon">👤</div><div class="nav-label">Profile</div><div class="nav-dot"></div></div>
+  </div>
+</div>
+
+<!-- ══ TOGETHER ══ -->
+<div class="screen" id="screen-together">
+  <div class="screen-body">
+    <div style="height:52px"></div>
+    <div class="together-header">
+      <div class="home-title">Play Together</div>
+      <div style="color:var(--text2);font-size:12px;margin-top:3px">Find someone to play with now</div>
+    </div>
+    <div style="padding:0 24px 14px">
+      <div class="match-box">
+        <div class="match-box-title">Set up your session</div>
+        <div class="match-row"><div class="match-row-label">Mood</div><div class="match-chips"><div class="match-chip sel" onclick="toggleChip(this)">🌊 Chill</div><div class="match-chip" onclick="toggleChip(this)">☕ Cozy</div><div class="match-chip" onclick="toggleChip(this)">⚡ Intense</div><div class="match-chip" onclick="toggleChip(this)">👥 Social</div></div></div>
+        <div class="match-row"><div class="match-row-label">Time</div><div class="match-chips"><div class="match-chip" onclick="toggleChip(this)">30 min</div><div class="match-chip sel" onclick="toggleChip(this)">1 hour</div><div class="match-chip" onclick="toggleChip(this)">2+ hrs</div></div></div>
+        <div class="match-row"><div class="match-row-label">Type</div><div class="match-chips"><div class="match-chip sel" onclick="toggleChip(this)">Co-op</div><div class="match-chip" onclick="toggleChip(this)">Versus</div><div class="match-chip" onclick="toggleChip(this)">Any</div></div></div>
+        <button class="match-btn" onclick="showToast('Finding matches... 👾')">Find matches</button>
+      </div>
+    </div>
+    <div class="section-header"><div class="section-title">Friends online</div><div class="section-link">See all</div></div>
+    <div class="friends-list" id="friendsList"></div>
+    <div style="height:20px"></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="switchTab('home')"><div class="nav-icon">🔭</div><div class="nav-label">Discover</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('backlog')"><div class="nav-icon">📚</div><div class="nav-label">Backlog</div><div class="nav-dot"></div></div>
+    <div class="nav-item active" onclick="switchTab('together')"><div class="nav-icon">👾</div><div class="nav-label">Together</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('profile')"><div class="nav-icon">👤</div><div class="nav-label">Profile</div><div class="nav-dot"></div></div>
+  </div>
+</div>
+
+<!-- ══ PROFILE ══ -->
+<div class="screen" id="screen-profile">
+  <div class="screen-body">
+    <div style="height:52px"></div>
+    <div class="profile-header">
+      <div class="profile-av">AJ</div>
+      <div class="profile-name">Alex J.</div>
+      <div class="profile-sub">Gamer since 2008 · Mood: Chill</div>
+      <div class="p-platforms" id="profilePlatforms"><span class="pbadge">No platforms yet</span></div>
+    </div>
+    <div class="stats-grid">
+      <div class="stat-card"><div class="stat-val">47</div><div class="stat-lbl">Owned</div></div>
+      <div class="stat-card"><div class="stat-val">12</div><div class="stat-lbl">Completed</div></div>
+      <div class="stat-card"><div class="stat-val">186h</div><div class="stat-lbl">This year</div></div>
+    </div>
+    <div class="section-header"><div class="section-title">Platform theme</div><div class="section-link" onclick="goTo('screen-onboard')">Connect more</div></div>
+    <div style="padding:0 24px;margin-bottom:18px" id="platformSwitcher">
+      <div style="font-size:12px;color:var(--text2)">Connect a platform to unlock its color theme</div>
+    </div>
+    <div class="section-header"><div class="section-title">Settings</div></div>
+    <div class="settings-list">
+      <div class="settings-item" onclick="showToast('Notifications')"><span class="s-icon">🔔</span><span class="s-label">Notifications</span><span class="s-arrow">›</span></div>
+      <div class="settings-item" onclick="showToast('Mood preferences')"><span class="s-icon">🎭</span><span class="s-label">Mood preferences</span><span class="s-arrow">›</span></div>
+      <div class="settings-item" onclick="showToast('Privacy')"><span class="s-icon">🔒</span><span class="s-label">Privacy</span><span class="s-arrow">›</span></div>
+      <div class="settings-item" onclick="showToast('Help')"><span class="s-icon">💬</span><span class="s-label">Help &amp; feedback</span><span class="s-arrow">›</span></div>
+    </div>
+    <div style="height:20px"></div>
+  </div>
+  <div class="bottom-nav">
+    <div class="nav-item" onclick="switchTab('home')"><div class="nav-icon">🔭</div><div class="nav-label">Discover</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('backlog')"><div class="nav-icon">📚</div><div class="nav-label">Backlog</div><div class="nav-dot"></div></div>
+    <div class="nav-item" onclick="switchTab('together')"><div class="nav-icon">👾</div><div class="nav-label">Together</div><div class="nav-dot"></div></div>
+    <div class="nav-item active" onclick="switchTab('profile')"><div class="nav-icon">👤</div><div class="nav-label">Profile</div><div class="nav-dot"></div></div>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+</div><!-- phone-frame -->
+
+<script>
+let currentMood='chill', currentTime='30–45 min', screenHistory=[], connectedPlatforms=[], activePlatformTheme=null, qpIdx=0;
+
+const gamesData={
+  chill:[
+    {id:'g1',emoji:'🌿',title:'Stardew Valley',genre:'Farming',session:'30–45 min',match:98,hours:'150h',desc:'A relaxing farming RPG where you build your dream farm, befriend villagers, and explore at your own pace.',tags:['Chill','Farming','Relaxing']},
+    {id:'g2',emoji:'🏝️',title:'Animal Crossing',genre:'Life sim',session:'20–40 min',match:93,hours:'200h',desc:'Build your island paradise, befriend charming animal villagers, and enjoy the slow life.',tags:['Chill','Cozy','Open world']},
+    {id:'g3',emoji:'🌌',title:"No Man's Sky",genre:'Exploration',session:'45 min',match:88,hours:'100h',desc:'Explore a vast procedurally generated universe. Build bases, trade with aliens, discover new worlds.',tags:['Chill','Exploration','Sci-fi']},
+    {id:'g4',emoji:'🎣',title:'Dave the Diver',genre:'Adventure',session:'30 min',match:85,hours:'40h',desc:'Dive into a colorful underwater world by day, run a sushi restaurant by night.',tags:['Chill','Cozy','Adventure']},
+  ],
+  cozy:[
+    {id:'g5',emoji:'☕',title:'Coffee Talk',genre:'Visual novel',session:'20–30 min',match:96,hours:'10h',desc:'A lo-fi visual novel in a coffee shop. Listen to stories and brew the perfect drink.',tags:['Cozy','Visual novel','Short']},
+    {id:'g6',emoji:'🏡',title:'Unpacking',genre:'Puzzle',session:'20–30 min',match:92,hours:'8h',desc:'A zen puzzle game about unpacking a character\'s belongings across different life stages.',tags:['Cozy','Puzzle','Calming']},
+    {id:'g7',emoji:'🌸',title:'Spiritfarer',genre:'RPG',session:'45 min',match:89,hours:'40h',desc:'A cozy management game about being a ferrymaster for the deceased. Heartfelt and beautiful.',tags:['Cozy','RPG','Story']},
+  ],
+  intense:[
+    {id:'g8',emoji:'⚔️',title:'Hades',genre:'Roguelike',session:'30–60 min',match:97,hours:'80h',desc:'Rip through the Underworld in this fast-paced roguelike with incredible storytelling and satisfying combat.',tags:['Intense','Roguelike','Action']},
+    {id:'g9',emoji:'🔫',title:'Apex Legends',genre:'Battle royale',session:'30–45 min',match:90,hours:'320h',desc:'Drop in, gear up, and outlast the competition in fast-paced team-based battle royale.',tags:['Intense','FPS','Competitive']},
+    {id:'g10',emoji:'🗡️',title:'Elden Ring',genre:'Action RPG',session:'60+ min',match:86,hours:'120h',desc:'Explore a vast open world filled with brutal enemies and intricate lore.',tags:['Intense','Action RPG','Challenge']},
+  ],
+  social:[
+    {id:'g11',emoji:'🎪',title:'It Takes Two',genre:'Co-op',session:'45 min',match:97,hours:'12h',desc:'A genre-defying co-op adventure packed with surprises. Must play with a friend.',tags:['Social','Co-op','Adventure']},
+    {id:'g12',emoji:'🎮',title:'Overcooked 2',genre:'Party',session:'20–30 min',match:93,hours:'20h',desc:'Chaotic co-op cooking game for 2–4 players.',tags:['Social','Party','Chaotic']},
+    {id:'g13',emoji:'🌍',title:'Among Us',genre:'Deduction',session:'20 min',match:88,hours:'30h',desc:'Find the impostor on your crewmate mission. Best with 5–10 players.',tags:['Social','Deduction','Online']},
+  ],
+  nintendo_chill:[
+    {id:'n1',emoji:'🍄',title:'Super Mario Odyssey',genre:'Platformer',session:'30–45 min',match:96,hours:'65h',desc:'Explore colourful kingdoms with Mario and Cappy in this joyful open-world platformer. Great in short bursts.',tags:['Chill','Platformer','Nintendo']},
+    {id:'n2',emoji:'🌱',title:'Pikmin 4',genre:'Strategy',session:'30 min',match:91,hours:'40h',desc:'Lead adorable Pikmin through lush environments, solving puzzles at a gentle, relaxing pace.',tags:['Chill','Strategy','Nintendo']},
+    {id:'n3',emoji:'🎵',title:'Kirby and the Forgotten Land',genre:'Action',session:'25–40 min',match:88,hours:'25h',desc:'Kirby explores a post-apocalyptic world in this easygoing, charming adventure.',tags:['Chill','Action','Nintendo']},
+  ],
+  nintendo_cozy:[
+    {id:'n4',emoji:'🦆',title:'Untitled Goose Game',genre:'Puzzle',session:'20–30 min',match:95,hours:'6h',desc:'Be a horrible goose. Cause mischief in a peaceful village. Surprisingly delightful.',tags:['Cozy','Puzzle','Nintendo']},
+    {id:'n5',emoji:'🌿',title:'Story of Seasons',genre:'Farming sim',session:'30–45 min',match:90,hours:'80h',desc:'A classic cozy farming sim — grow crops, raise animals, build relationships.',tags:['Cozy','Farming','Nintendo']},
+  ],
+  nintendo_intense:[
+    {id:'n6',emoji:'⚔️',title:'The Legend of Zelda: TotK',genre:'Action RPG',session:'60+ min',match:98,hours:'120h',desc:'Build machines, soar through the skies, and unravel Hyrule\'s deepest mysteries in this epic adventure.',tags:['Intense','Action RPG','Nintendo']},
+    {id:'n7',emoji:'🏎️',title:'Mario Kart 8 Deluxe',genre:'Racing',session:'20–30 min',match:94,hours:'50h',desc:'Fast, chaotic, endlessly fun kart racing — solo or with friends.',tags:['Intense','Racing','Nintendo']},
+    {id:'n8',emoji:'🌀',title:'Metroid Dread',genre:'Metroidvania',session:'45–60 min',match:89,hours:'30h',desc:'Tense, atmospheric, and brutally challenging. The best Metroid in years.',tags:['Intense','Action','Nintendo']},
+  ],
+  nintendo_social:[
+    {id:'n9',emoji:'🎉',title:'Super Smash Bros. Ultimate',genre:'Fighting',session:'20–30 min',match:97,hours:'200h',desc:'The ultimate party fighter with 80+ characters. Bring friends.',tags:['Social','Fighting','Nintendo']},
+    {id:'n10',emoji:'🎲',title:'Mario Party Superstars',genre:'Party',session:'45–90 min',match:92,hours:'30h',desc:'Classic board game chaos with iconic mini-games. Perfect for groups.',tags:['Social','Party','Nintendo']},
+    {id:'n11',emoji:'🎤',title:'Nintendo Switch Sports',genre:'Sports',session:'20–40 min',match:87,hours:'15h',desc:'Get physical with tennis, bowling, football and more. Great for all ages.',tags:['Social','Sports','Nintendo']},
+  ]
+};
+
+const backlogData={
+  playing:[
+    {emoji:'⚔️',title:'Hades',meta:'Last played 2 days ago',badge:'bb-playing',badgeTxt:'Playing'},
+    {emoji:'🌌',title:"No Man's Sky",meta:'12 hours in',badge:'bb-playing',badgeTxt:'Playing'},
+    {emoji:'🌸',title:'Spiritfarer',meta:'Chapter 3 · 8 hrs in',badge:'bb-playing',badgeTxt:'Playing'},
+  ],
+  nintendo:[
+    {emoji:'⚔️',title:'Zelda: TotK',meta:'Last played yesterday',badge:'bb-playing',badgeTxt:'Playing'},
+    {emoji:'🍄',title:'Super Mario Odyssey',meta:'World 5 · 18 hrs in',badge:'bb-playing',badgeTxt:'Playing'},
+    {emoji:'🎉',title:'Smash Bros. Ultimate',meta:'Last played 3 days ago',badge:'bb-playing',badgeTxt:'Playing'},
+  ],
+  saved:[
+    {emoji:'🗡️',title:'Elden Ring',meta:'Added 2 weeks ago',badge:'bb-saved',badgeTxt:'Saved'},
+    {emoji:'🔫',title:'Apex Legends',meta:'Friends recommended',badge:'bb-saved',badgeTxt:'Saved'},
+    {emoji:'🏡',title:'Unpacking',meta:'On sale last week',badge:'bb-saved',badgeTxt:'Saved'},
+  ],
+  completed:[
+    {emoji:'🌿',title:'Stardew Valley',meta:'All achievements ✓',badge:'bb-done',badgeTxt:'Done ✓'},
+    {emoji:'🏝️',title:'Animal Crossing',meta:'5-star island ✓',badge:'bb-done',badgeTxt:'Done ✓'},
+  ]
+};
+
+const friendsData=[
+  {name:'Mia K.',initials:'MK',color:'#1B6FD8',status:'Playing Hades now',match:'94%',online:true},
+  {name:'Sam T.',initials:'ST',color:'#0891b2',status:'Available · Chill mood',match:'88%',online:true},
+  {name:'Jordan',initials:'JD',color:'#059669',status:'Online · 1 hr available',match:'81%',online:false},
+];
+
+const platformConfig={
+  xbox:{theme:'xbox',icon:'🟢',name:'Xbox',color:'#52B043',cls:'xbox-ov',bannerCls:'xbox',bannerTxt:'Xbox Game Pass connected'},
+  psn:{theme:'psn',icon:'🎮',name:'PlayStation',color:'#00B4FF',cls:'psn-ov',bannerCls:'psn',bannerTxt:'PlayStation library connected'},
+  steam:{theme:'steam',icon:'🖥️',name:'Steam',color:'#66C0F4',cls:'steam-ov',bannerCls:'steam',bannerTxt:'Steam library imported'},
+  nintendo:{theme:'nintendo',icon:'🔴',name:'Nintendo Switch',color:'#E60012',cls:'nintendo-ov',bannerCls:'nintendo',bannerTxt:'Nintendo Switch library connected'},
+};
+
+function goTo(id){
+  const prev=document.querySelector('.screen.active');
+  if(prev){screenHistory.push(prev.id);prev.classList.remove('active')}
+  document.getElementById(id).classList.add('active');
+}
+function goBack(){
+  const prev=screenHistory.pop();
+  document.querySelector('.screen.active')?.classList.remove('active');
+  if(prev)document.getElementById(prev)?.classList.add('active');
+}
+function switchTab(tab){
+  const map={home:'screen-home',backlog:'screen-backlog',together:'screen-together',profile:'screen-profile'};
+  screenHistory=[];
+  document.querySelector('.screen.active')?.classList.remove('active');
+  document.getElementById(map[tab]).classList.add('active');
+}
+
+function connectPlatform(p){
+  const cfg=platformConfig[p];
+  document.getElementById('opt-'+p).classList.add('conn-'+p);
+  const s=document.getElementById(p+'-status');
+  s.className='p-status ok-'+p; s.textContent='Connected ✓';
+  if(!connectedPlatforms.includes(p))connectedPlatforms.push(p);
+  // Show transition
+  const ov=document.getElementById('ptOverlay');
+  document.getElementById('ptIcon').textContent=cfg.icon;
+  document.getElementById('ptText').textContent=cfg.name+' Connected!';
+  document.getElementById('ptSub').textContent='Switching to '+cfg.name+' theme…';
+  ov.className='pt-overlay show '+cfg.cls;
+  setTimeout(()=>{applyTheme(p);ov.classList.remove('show');},1800);
+  updateProfile();
+}
+
+function applyTheme(p){
+  document.body.classList.remove('theme-xbox','theme-psn','theme-steam','theme-nintendo');
+  if(p){document.body.classList.add('theme-'+p);activePlatformTheme=p;}
+  else{activePlatformTheme=null;}
+  const banner=document.getElementById('platformBanner');
+  if(p){const cfg=platformConfig[p];banner.className='platform-banner '+cfg.bannerCls;banner.innerHTML=`<span>${cfg.icon}</span><span>${cfg.bannerTxt}</span>`;banner.style.display='flex';}
+  else{banner.style.display='none';}
+  updateHome();
+}
+
+function updateProfile(){
+  const pp=document.getElementById('profilePlatforms');
+  pp.innerHTML=connectedPlatforms.length===0?'<span class="pbadge">No platforms yet</span>':connectedPlatforms.map(p=>{const cfg=platformConfig[p];return`<span class="pbadge" style="border-color:${cfg.color};color:${cfg.color}">${cfg.icon} ${cfg.name}</span>`;}).join('');
+  const sw=document.getElementById('platformSwitcher');
+  if(connectedPlatforms.length>0){
+    sw.innerHTML='<div style="font-size:11px;color:var(--text2);margin-bottom:9px">Active theme — tap to switch:</div><div style="display:flex;gap:7px;flex-wrap:wrap">'+
+      connectedPlatforms.map(p=>{const cfg=platformConfig[p];const active=activePlatformTheme===p;return`<div onclick="applyTheme('${p}')" style="padding:7px 14px;border-radius:100px;border:1.5px solid ${active?cfg.color:'var(--border)'};background:${active?'var(--blue-bg)':'var(--bg2)'};color:${active?cfg.color:'var(--text2)'};font-size:11px;font-weight:500;cursor:pointer">${cfg.icon} ${cfg.name}</div>`;}).join('')+
+      `<div onclick="applyTheme(null)" style="padding:7px 14px;border-radius:100px;border:1.5px solid var(--border);background:var(--bg2);color:var(--text2);font-size:11px;font-weight:500;cursor:pointer">◈ Default</div></div>`;
+  }
+}
+
+function selectMood(mood,el){
+  document.querySelectorAll('.mood-card').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');currentMood=mood;checkReady();
+}
+function selectTime(el){
+  document.querySelectorAll('.time-chip').forEach(c=>c.classList.remove('selected'));
+  el.classList.add('selected');currentTime=el.textContent;checkReady();
+}
+function checkReady(){if(currentMood&&currentTime)document.getElementById('moodContinue').classList.add('ready');}
+function finishMood(){updateHome();goTo('screen-home');}
+
+function updateHome(){
+  const mm={chill:{emoji:'🌊',label:'Chill',color:'var(--chill-c)',bg:'var(--chill-bg)',glow:'rgba(59,188,255,0.08)'},cozy:{emoji:'☕',label:'Cozy',color:'var(--cozy-c)',bg:'var(--cozy-bg)',glow:'rgba(255,157,107,0.08)'},intense:{emoji:'⚡',label:'Intense',color:'var(--intense-c)',bg:'var(--intense-bg)',glow:'rgba(255,107,138,0.08)'},social:{emoji:'👥',label:'Social',color:'var(--social-c)',bg:'var(--social-bg)',glow:'rgba(93,222,138,0.08)'}};
+  const m=mm[currentMood];
+
+  // Pick games based on platform (Nintendo gets its own curated list)
+  const nintendoMoodMap={chill:'nintendo_chill',cozy:'nintendo_cozy',intense:'nintendo_intense',social:'nintendo_social'};
+  const games=activePlatformTheme==='nintendo' ? gamesData[nintendoMoodMap[currentMood]] : gamesData[currentMood];
+
+  const pill=document.getElementById('activeMoodPill');
+  pill.className='mood-pill '+currentMood;
+  pill.innerHTML=`${m.emoji} ${m.label} · ${currentTime} <span style="opacity:.6">✎</span>`;
+  document.getElementById('moodAccent').style.background=`radial-gradient(ellipse at 50% 0%,${m.glow} 0%,transparent 68%)`;
+  const feat=games[0];
+  document.getElementById('featuredBg').textContent=feat.emoji;
+  document.getElementById('featuredTitle').textContent=feat.title;
+  const fb=document.getElementById('featuredBadge');
+  fb.style.background=m.bg;fb.style.color=m.color;fb.textContent=`${feat.match}% match · ${m.label}`;
+  const scroll=document.getElementById('gameScroll');
+  scroll.innerHTML='';
+  games.slice(1).forEach(g=>{
+    const card=document.createElement('div');card.className='game-card';
+    card.innerHTML=`<div class="game-thumb">${g.emoji}</div><div class="game-info"><div class="game-name">${g.title}</div><div class="game-time">⏱ ${g.session}</div><div class="game-tag" style="background:${m.bg};color:${m.color}">${g.genre}</div></div>`;
+    card.onclick=()=>openDetail(g.id);scroll.appendChild(card);
+  });
+  const bs=document.getElementById('backlogScroll');
+  bs.innerHTML='';
+  const resumeList=activePlatformTheme==='nintendo' ? backlogData.nintendo : backlogData.playing;
+  resumeList.forEach(g=>{
+    const card=document.createElement('div');card.className='game-card';
+    card.innerHTML=`<div class="game-thumb">${g.emoji}</div><div class="game-info"><div class="game-name">${g.title}</div><div class="game-time">${g.meta}</div><div class="game-tag" style="background:rgba(93,222,138,0.12);color:#5DDE8A">Resume</div></div>`;
+    card.onclick=()=>showToast(`Resuming ${g.title}... ▶`);bs.appendChild(card);
+  });
+}
+
+function openDetail(id){
+  const all=[...gamesData.chill,...gamesData.cozy,...gamesData.intense,...gamesData.social,
+             ...gamesData.nintendo_chill,...gamesData.nintendo_cozy,...gamesData.nintendo_intense,...gamesData.nintendo_social];
+  const nintendoMoodMap={chill:'nintendo_chill',cozy:'nintendo_cozy',intense:'nintendo_intense',social:'nintendo_social'};
+  const game=id==='featured'?(activePlatformTheme==='nintendo'?gamesData[nintendoMoodMap[currentMood]][0]:gamesData[currentMood][0]):all.find(g=>g.id===id);
+  if(!game)return;
+  const mc={chill:{bg:'var(--chill-bg)',color:'var(--chill-c)',label:'🌊 Chill match',hero:'#0a1522'},cozy:{bg:'var(--cozy-bg)',color:'var(--cozy-c)',label:'☕ Cozy match',hero:'#1e130a'},intense:{bg:'var(--intense-bg)',color:'var(--intense-c)',label:'⚡ Intense match',hero:'#1e0a0e'},social:{bg:'var(--social-bg)',color:'var(--social-c)',label:'👥 Social match',hero:'#0a1e12'}}[currentMood];
+  document.getElementById('detailEmoji').textContent=game.emoji;
+  document.getElementById('detailHero').style.background=mc.hero;
+  document.getElementById('detailTitle').textContent=game.title;
+  document.getElementById('detailDesc').textContent=game.desc;
+  document.getElementById('dSession').textContent=game.session;
+  document.getElementById('dMatch').textContent=game.match+'%';
+  document.getElementById('dHours').textContent=game.hours;
+  const mt=document.getElementById('detailMoodTag');
+  mt.style.background=mc.bg;mt.style.color=mc.color;mt.textContent=mc.label;
+  document.getElementById('detailTags').innerHTML=game.tags.map(t=>`<span class="detail-tag">${t}</span>`).join('');
+  goTo('screen-detail');
+}
+
+function showQuickPick(){
+  const g=gamesData[currentMood][qpIdx%gamesData[currentMood].length];
+  document.getElementById('qpEmoji').textContent=g.emoji;
+  document.getElementById('qpTitle').textContent=g.title;
+  document.getElementById('qpSub').textContent=`${g.genre} · ${g.session} · Perfect match`;
+  document.getElementById('qpOverlay').classList.add('show');
+}
+function shuffleQP(){qpIdx++;const g=gamesData[currentMood][qpIdx%gamesData[currentMood].length];document.getElementById('qpEmoji').textContent=g.emoji;document.getElementById('qpTitle').textContent=g.title;document.getElementById('qpSub').textContent=`${g.genre} · ${g.session} · Perfect match`;}
+function closeQP(){document.getElementById('qpOverlay').classList.remove('show');}
+
+function switchBTab(el,tab){document.querySelectorAll('.btab').forEach(b=>b.classList.remove('active'));el.classList.add('active');renderBacklog(tab);}
+function renderBacklog(tab){
+  const list=document.getElementById('backlogList');list.innerHTML='';
+  backlogData[tab].forEach(g=>{const item=document.createElement('div');item.className='bl-item';item.innerHTML=`<div class="bl-thumb">${g.emoji}</div><div class="bl-info"><div class="bl-name">${g.title}</div><div class="bl-meta">${g.meta}</div></div><div class="bl-badge ${g.badge}">${g.badgeTxt}</div>`;item.onclick=()=>showToast(`Opening ${g.title}...`);list.appendChild(item);});
+}
+function renderFriends(){
+  const list=document.getElementById('friendsList');list.innerHTML='';
+  friendsData.forEach(f=>{const card=document.createElement('div');card.className='friend-card';card.innerHTML=`<div class="friend-av" style="background:${f.color}">${f.initials}</div><div class="friend-info"><div class="friend-name">${f.name}</div><div class="friend-status">${f.online?'<span class="online-dot"></span>':''}${f.status}</div></div><div class="friend-pct">${f.match}</div>`;card.onclick=()=>showToast(`Inviting ${f.name}... 👾`);list.appendChild(card);});
+}
+function toggleChip(el){el.classList.toggle('sel');}
+
+let toastT;
+function showToast(msg){const t=document.getElementById('toast');t.textContent=msg;t.classList.add('show');clearTimeout(toastT);toastT=setTimeout(()=>t.classList.remove('show'),2200);}
+
+function updateClock(){const n=new Date();document.getElementById('clock').textContent=n.getHours()+':'+String(n.getMinutes()).padStart(2,'0');}
+updateClock();setInterval(updateClock,15000);
+
+renderBacklog('playing');renderFriends();updateHome();
+</script>
+</body>
+</html>
